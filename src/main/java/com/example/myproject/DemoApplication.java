@@ -129,6 +129,8 @@ class MyController{
 		calculation.setY( queryParameters.get( "y" ) );
 		calculation.setVal( queryParameters.get( "val" ) );
 		calculation.setUserId( (Long) session.getAttribute( "userId" ) );
+		UserAccount user = userRepo.findById( calculation.getUserId() ).get();
+		calculation.setName( user.getName() ); 
 		calculation.setDate( queryParameters.get( "date" ) );
 		calculation = calculationRepo.save( calculation );
 
@@ -136,6 +138,24 @@ class MyController{
 		System.out.println( calculation );
 
 		return "{ \"error\": false }";
+	}
+
+	@PostMapping("/GetLast10Calculations")
+	public String getLast10Calculations(){
+		List<Calculation> calcs = calculationRepo.findAll();
+        	String strRes = "{ \"error\": false, \n"
+            		+ " \"calculations\": [";
+
+        	for(int i =0; i < 10 && i < calcs.size(); i++){
+                	strRes += calcs.get(i).toJSON();
+            		if( i < calcs.size() - 1 ){
+                		strRes += ", ";
+            		}
+        	}
+
+        	strRes += "] }";
+		
+		return strRes;
 	}
 }
 
@@ -162,7 +182,11 @@ class Calculation{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	long id;
 	long userId;
-	String x, op, y, val, date;
+	String x, op, y, val, date, name;
+
+	String toJSON(){
+		return "{ \"X\":\""+x+"\", \"Op\":\""+op+"\", \"Y\":\""+y+"\", \"Val\":\""+val+"\", \"Date\":\""+date+"\", \"Username\": \""+name+"\" }";
+	}
 }
 
 interface CalculationRepo extends JpaRepository<Calculation, Long> {
