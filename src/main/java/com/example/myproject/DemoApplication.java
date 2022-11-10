@@ -54,6 +54,8 @@ class MyController{
 	@PostMapping("/CheckSession")
 	public String checkSession(HttpSession session){
 		boolean hasSession = session.getAttribute("userId") != null;
+		System.out.println("/CheckSession");
+		System.out.println( session.getAttribute("userId") );
 		return "{ \"error\": false, \"hasSession\": " + String.valueOf(hasSession) + " }";
 	}
 
@@ -67,6 +69,7 @@ class MyController{
 		
 		boolean useable = username != null && !username.equals("") && password != null && !password.equals("");
 
+		System.out.println("/CreateAccount");
 		if( useable ){
 
 			UserAccount user = new UserAccount();
@@ -88,6 +91,26 @@ class MyController{
 		}
 	}
 
+	@PostMapping("/StartSession")
+	public String startSession(@RequestParam Map<String, String> queryParameters, HttpSession session ){
+                String username = queryParameters.get( "username" );
+                String password = queryParameters.get( "password" );
+		
+		UserAccount user = userRepo.findByName( username ); 
+
+		boolean authorized = user != null && user.getPassword().equals( password );
+
+		System.out.println("/startSession");
+		if( !authorized ){
+			return "{ \"error\": false, \"hasSession\": " + String.valueOf(authorized) + " }";
+		}else{
+			session.setAttribute("userId", user.getId() );
+			System.out.println( session.getAttribute("userId") );
+			return "{ \"error\": false, \"hasSession\": " + String.valueOf(authorized) + " }";
+		}
+
+	}
+
 }
 
 @Entity
@@ -101,4 +124,6 @@ class UserAccount{
 	String name, password;
 }
 
-interface UserRepo extends JpaRepository<UserAccount, Long> {}
+interface UserRepo extends JpaRepository<UserAccount, Long> {
+	UserAccount findByName(String name);
+}
