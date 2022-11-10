@@ -116,6 +116,27 @@ class MyController{
 		session.invalidate();
 		return "{ \"error\": false }";
 	}
+
+	@Autowired
+	CalculationRepo calculationRepo;
+
+	@PostMapping("/AddCalculation")
+	public String addCalculation( @RequestParam Map<String, String> queryParameters, HttpSession session  ){
+
+		Calculation calculation = new Calculation();
+		calculation.setX( queryParameters.get( "x" ) );
+		calculation.setOp( queryParameters.get( "op" ) );
+		calculation.setY( queryParameters.get( "y" ) );
+		calculation.setVal( queryParameters.get( "val" ) );
+		calculation.setUserId( (Long) session.getAttribute( "userId" ) );
+		calculation.setDate( queryParameters.get( "date" ) );
+		calculation = calculationRepo.save( calculation );
+
+		System.out.println("/addCalculation" );
+		System.out.println( calculation );
+
+		return "{ \"error\": false }";
+	}
 }
 
 @Entity
@@ -131,4 +152,18 @@ class UserAccount{
 
 interface UserRepo extends JpaRepository<UserAccount, Long> {
 	UserAccount findByName(String name);
+}
+
+@Entity
+@Data
+@Table(name="calculations")
+class Calculation{
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	long id;
+	long userId;
+	String x, op, y, val, date;
+}
+
+interface CalculationRepo extends JpaRepository<Calculation, Long> {
 }
