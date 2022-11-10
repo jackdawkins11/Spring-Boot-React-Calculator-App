@@ -111,6 +111,11 @@ class MyController{
 
 	}
 
+	@PostMapping("/EndSession")
+	public String startSession(HttpSession session ){
+		session.invalidate();
+		return "{ \"error\": false }";
+	}
 }
 
 @Entity
